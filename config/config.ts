@@ -227,13 +227,13 @@ export const config: IAppConfig = {
     excludedKeywords: ["PHP", "WordPress", "1C", "Python", "Java", "C#", "Ruby", "Go", "Scala", "Kotlin", "Swift", "Objective-C", "C", "C++", "Assembly", "Haskell", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D"],
 
     salary: {
-      min: 1000,
-      currency: "USD",
+      min: 100000,
+      currency: "RUB",
     },
 
     remoteOnly: true,
 
-    minMatchScore: 80,
+    minMatchScore: 70,
   },
 
   notifications: {
