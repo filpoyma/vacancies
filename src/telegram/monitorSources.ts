@@ -4,6 +4,14 @@ import { getTelegramDialogs } from "./dialogs.ts";
 import type { IMonitorSource, ITelegramSource } from "./types.ts";
 import type { TAppLogger } from "../utils/logger.ts";
 
+function nonEmptyString(value: string | null | undefined): string | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
 function normalizeUsername(username: string): string {
   return username.trim().replace(/^@/, "").toLowerCase();
 }
@@ -12,30 +20,32 @@ function normalizeTitle(title: string): string {
   return title.trim().toLowerCase();
 }
 
-function findConfiguredDialog(
+/** @internal exported for tests */
+export function findConfiguredDialog(
   config: ISourceConfig,
   dialogs: ITelegramSource[],
 ): ITelegramSource | undefined {
-  if (config.id !== undefined && config.id.trim() !== "") {
-    const id = config.id.trim();
+  const id = nonEmptyString(config.id);
+  if (id !== undefined) {
     const byId = dialogs.find((dialog) => dialog.id === id);
     if (byId !== undefined) {
       return byId;
     }
   }
 
-  if (config.username !== undefined && config.username.trim() !== "") {
-    const username = normalizeUsername(config.username);
-    return dialogs.find(
-      (dialog) =>
-        dialog.username !== undefined &&
-        normalizeUsername(dialog.username) === username,
-    );
+  const configUsername = nonEmptyString(config.username);
+  if (configUsername !== undefined) {
+    const username = normalizeUsername(configUsername);
+    return dialogs.find((dialog) => {
+      const dialogUsername = nonEmptyString(dialog.username);
+      return dialogUsername !== undefined && normalizeUsername(dialogUsername) === username;
+    });
   }
 
-  if (config.name !== undefined && config.name.trim() !== "") {
-    const name = normalizeTitle(config.name);
-    return dialogs.find((dialog) => normalizeTitle(dialog.title) === name);
+  const name = nonEmptyString(config.name);
+  if (name !== undefined) {
+    const normalizedName = normalizeTitle(name);
+    return dialogs.find((dialog) => normalizeTitle(dialog.title) === normalizedName);
   }
 
   return undefined;
@@ -46,18 +56,21 @@ function toMonitorSource(
   dialog: ITelegramSource | undefined,
 ): IMonitorSource | undefined {
   if (dialog !== undefined) {
+    const label = nonEmptyString(config.name) ?? dialog.title;
     return {
       id: dialog.id,
-      label: config.name?.trim() || dialog.title,
-      username: dialog.username,
+      label,
+      username: nonEmptyString(dialog.username),
       type: dialog.type,
     };
   }
 
-  if (config.id !== undefined && config.id.trim() !== "") {
+  const id = nonEmptyString(config.id);
+  if (id !== undefined) {
+    const label = nonEmptyString(config.name) ?? id;
     return {
-      id: config.id.trim(),
-      label: config.name?.trim() || config.id.trim(),
+      id,
+      label,
       type: "channel",
     };
   }
