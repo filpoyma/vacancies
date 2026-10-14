@@ -14,6 +14,7 @@ import {
   getTelegramDialogs,
 } from "../telegram/dialogs.ts";
 import type { ITelegramSource } from "../telegram/types.ts";
+import { colorRed } from "../utils/ansi.ts";
 import { createLogger } from "../utils/logger.ts";
 
 const log = createLogger("CLI");
@@ -57,7 +58,7 @@ async function askAddDialog(
   const usernamePart =
     dialog.username !== undefined ? ` @${dialog.username}` : "";
   const line = `[${index}/${total}] ${dialog.type} | ${dialog.title}${usernamePart} | ${dialog.id}`;
-  console.log(line);
+  console.log(colorRed(line));
 
   const answer = (await rl.question("Add to sources? Enter=yes, n=no: ")).trim();
   return answer !== "n";
@@ -81,11 +82,12 @@ async function main(): Promise<void> {
       return;
     }
 
-    console.log("\n" + formatTelegramDialogsTable(dialogs) + "\n");
+    const isConfigured = (dialog: ITelegramSource): boolean =>
+      isDialogAlreadyConfigured(dialog, config.telegram.sources);
 
-    const pending = dialogs.filter(
-      (dialog) => !isDialogAlreadyConfigured(dialog, config.telegram.sources),
-    );
+    console.log("\n" + formatTelegramDialogsTable(dialogs, { isConfigured }) + "\n");
+
+    const pending = dialogs.filter((dialog) => !isConfigured(dialog));
 
     log.info(
       `Already configured: ${config.telegram.sources.length}, new candidates: ${pending.length}`,

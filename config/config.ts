@@ -211,6 +211,70 @@ export const config: IAppConfig = {
         name: "Работа на Кипре | Цифровые кочевники",
         username: "digitalnomadcyprus",
       },
+      {
+        id: "-1001246902558",
+        name: "CY iT HR",
+        username: "cyprusithr",
+      },
+      {
+        id: "-1002839091761",
+        name: "Cyprus Jobs - проверенные вакансии на Кипре",
+        username: "opento_cyprus",
+      },
+      {
+        id: "-1001322084768",
+        name: "Job for Chiefs (TOP vacancies)",
+        username: "forchiefs",
+      },
+      {
+        id: "-1001299197272",
+        name: "Mobile Native ️️",
+      },
+      {
+        id: "-1002218794883",
+        name: "Offer Inside",
+        username: "JobOfferInside",
+      },
+      {
+        id: "-1001706774915",
+        name: "Serbia IT Jobs [RU/UA/ENG]",
+        username: "serbia_jobs",
+      },
+      {
+        id: "-1002518727203",
+        name: "WNTD | Dev & QA",
+        username: "wntddev",
+      },
+      {
+        id: "-1001985070793",
+        name: "Алёшкин.",
+        username: "ivalshkn",
+      },
+      {
+        id: "-1001531120804",
+        name: "Вакансии и Стажировки от MyResume",
+        username: "myresume_ru",
+      },
+      {
+        id: "-1001432475923",
+        name: "Мобильная разработка",
+        username: "mobi_dev",
+      },
+      {
+        id: "-1001425201311",
+        name: "Мобильная разработка (mobile developer)",
+        username: "imobile_dev",
+      },
+      {
+        id: "-1002449224609",
+        name: "Пульс Цифрового Фронтира - Curi0us W0rld",
+        username: "curi0us_w0rld",
+      },
+      {
+        id: "-1001512435004",
+        name: "СЕТИ — IT & Digital вакансии",
+        username: "it_vakansii_jobs",
+      },
     ],
   },
 
@@ -220,6 +284,9 @@ export const config: IAppConfig = {
       "Fullstack Developer",
       "React Developer",
       "React Native Developer",
+      "Senior Full Stack Developer",
+      "Senior FullStack Developer",
+      "Senior Frontend Developer",
     ],
 
     skills: ["React", "React Native", "TypeScript", "Node.js"],

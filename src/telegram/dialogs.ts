@@ -2,7 +2,12 @@ import { Api } from "teleproto";
 import type { TelegramClient } from "teleproto";
 import type { Entity } from "teleproto/define";
 import type { TTelegramDialogType } from "../config/types.ts";
-import type { IGetTelegramDialogsOptions, ITelegramSource } from "./types.ts";
+import { colorGreen, colorRed, shouldUseAnsiColors } from "../utils/ansi.ts";
+import type {
+  IFormatTelegramDialogsTableOptions,
+  IGetTelegramDialogsOptions,
+  ITelegramSource,
+} from "./types.ts";
 
 function normalizeTitle(title: string): string {
   return title.trim().toLowerCase();
@@ -110,14 +115,50 @@ export async function getTelegramDialogs(
 const ID_COLUMN_WIDTH = 26;
 const TYPE_COLUMN_WIDTH = 14;
 
-export function formatTelegramDialogsTable(sources: ITelegramSource[]): string {
+function formatDialogRow(source: ITelegramSource): string {
+  const id = source.id.padEnd(ID_COLUMN_WIDTH);
+  const type = source.type.padEnd(TYPE_COLUMN_WIDTH);
+  return `${id}${type}${source.title}`;
+}
+
+function formatTableLegend(options: IFormatTelegramDialogsTableOptions): string | undefined {
+  if (options.isConfigured === undefined) {
+    return undefined;
+  }
+
+  if (shouldUseAnsiColors()) {
+    return `${colorGreen("in config")} | ${colorRed("not in config")}`;
+  }
+
+  return "in config (+) | not in config (-)";
+}
+
+export function formatTelegramDialogsTable(
+  sources: ITelegramSource[],
+  options: IFormatTelegramDialogsTableOptions = {},
+): string {
   const header = `${"ID".padEnd(ID_COLUMN_WIDTH)}${"TYPE".padEnd(TYPE_COLUMN_WIDTH)}TITLE`;
   const separator = "-".repeat(header.length);
+  const isConfigured = options.isConfigured;
+
   const rows = sources.map((source) => {
-    const id = source.id.padEnd(ID_COLUMN_WIDTH);
-    const type = source.type.padEnd(TYPE_COLUMN_WIDTH);
-    return `${id}${type}${source.title}`;
+    const row = formatDialogRow(source);
+
+    if (isConfigured === undefined) {
+      return row;
+    }
+
+    const configured = isConfigured(source);
+    if (shouldUseAnsiColors()) {
+      return configured ? colorGreen(row) : colorRed(row);
+    }
+
+    const marker = configured ? "(+) " : "(-) ";
+    return `${marker}${row}`;
   });
 
-  return [header, separator, ...rows].join("\n");
+  const legend = formatTableLegend(options);
+  const lines = legend !== undefined ? [legend, "", header, separator, ...rows] : [header, separator, ...rows];
+
+  return lines.join("\n");
 }

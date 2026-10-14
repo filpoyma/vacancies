@@ -12,6 +12,11 @@ export interface IGetTelegramDialogsOptions {
   excludeTitles?: string[];
 }
 
+export interface IFormatTelegramDialogsTableOptions {
+  /** When set, rows are colored: configured vs not yet in config. */
+  isConfigured?: (source: ITelegramSource) => boolean;
+}
+
 export interface IMonitorSource {
   id: string;
   label: string;
