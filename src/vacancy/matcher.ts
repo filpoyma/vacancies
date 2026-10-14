@@ -12,7 +12,6 @@ const SKILL_WEIGHTS: Record<string, number> = {
 const ROLE_KEYWORD_WEIGHT = 10;
 const REMOTE_WEIGHT = 15;
 const FULLSTACK_WEIGHT = 10;
-const SALARY_MATCH_WEIGHT = 10;
 const EXCLUDED_KEYWORD_PENALTY = -30;
 const OFFICE_ONLY_PENALTY = -25;
 const REMOTE_REQUIRED_PENALTY = -25;
@@ -76,15 +75,6 @@ export class RuleBasedMatcher implements IVacancyMatcher {
     if (this.filters.remoteOnly && vacancy.remote !== true) {
       score += REMOTE_REQUIRED_PENALTY;
       reasons.push(`${REMOTE_REQUIRED_PENALTY} remote required`);
-    }
-
-    if (
-      vacancy.salary?.min !== undefined &&
-      vacancy.salary.currency === this.filters.salary.currency &&
-      vacancy.salary.min >= this.filters.salary.min
-    ) {
-      score += SALARY_MATCH_WEIGHT;
-      reasons.push(`+${SALARY_MATCH_WEIGHT} salary >= target`);
     }
 
     for (const keyword of this.filters.excludedKeywords) {

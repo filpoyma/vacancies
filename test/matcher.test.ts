@@ -10,7 +10,7 @@ const filters: IFiltersConfig = {
   excludedKeywords: ["PHP", "WordPress", "1C"],
   salary: { min: 3000, currency: "USD" },
   remoteOnly: true,
-  minMatchScore: 80,
+  minMatchScore: 70,
 };
 
 const vacancy: IParsedVacancy = {
@@ -28,7 +28,7 @@ describe("RuleBasedMatcher", () => {
     const matcher = new RuleBasedMatcher(filters);
     const result = await matcher.match(vacancy);
 
-    assert.ok(result.score >= 80);
+    assert.ok(result.score >= 70);
     assert.equal(result.isRelevant, true);
     assert.ok(result.reasons.length > 0);
   });
@@ -41,7 +41,7 @@ describe("RuleBasedMatcher", () => {
       skills: ["react", "php"],
     });
 
-    assert.ok(result.score < 80);
+    assert.ok(result.score < 70);
     assert.equal(result.isRelevant, false);
     assert.ok(result.reasons.some((reason) => reason.includes("WordPress")));
   });

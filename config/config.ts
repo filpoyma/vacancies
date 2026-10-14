@@ -246,11 +246,6 @@ export const config: IAppConfig = {
         username: "wntddev",
       },
       {
-        id: "-1001985070793",
-        name: "Алёшкин.",
-        username: "ivalshkn",
-      },
-      {
         id: "-1001531120804",
         name: "Вакансии и Стажировки от MyResume",
         username: "myresume_ru",
@@ -291,7 +286,7 @@ export const config: IAppConfig = {
 
     skills: ["React", "React Native", "TypeScript", "Node.js"],
 
-    excludedKeywords: ["PHP", "WordPress", "1C", "Python", "Java", "C#", "Ruby", "Go", "Scala", "Kotlin", "Swift", "Objective-C", "C", "C++", "Assembly", "Haskell", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D", "Erlang", "Elixir", "OCaml", "Rust", "D"],
+    excludedKeywords: ["PHP", "WordPress", "1C", "Python", "Java", "C#", "Ruby", "Go", "Scala", "Rust"],
 
     salary: {
       min: 100000,
@@ -300,7 +295,7 @@ export const config: IAppConfig = {
 
     remoteOnly: true,
 
-    minMatchScore: 70,
+    minMatchScore: 60,
   },
 
   notifications: {
