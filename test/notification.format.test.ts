@@ -29,4 +29,28 @@ describe("formatVacancyNotificationMessage", () => {
     assert.match(message, /React Jobs/);
     assert.match(message, /href="https:\/\/t\.me\/reactjobs\/42"/);
   });
+
+  it("uses short format when title mentions a configured role", () => {
+    const parsed: IParsedVacancy = {
+      isVacancy: true,
+      title: "Senior React Developer",
+      description: "desc",
+      skills: ["react"],
+      remote: true,
+    };
+
+    const message = formatVacancyNotificationMessage(
+      parsed,
+      { score: 94, isRelevant: true, reasons: ["AI reason"] },
+      "React Jobs",
+      "https://t.me/reactjobs/42",
+      ["React Developer"],
+    );
+
+    assert.doesNotMatch(message, /НОВАЯ ВАКАНСИЯ/);
+    assert.match(message, /Senior React Developer/);
+    assert.match(message, /href="https:\/\/t\.me\/reactjobs\/42"/);
+    assert.doesNotMatch(message, /Match: 94%/);
+    assert.doesNotMatch(message, /React Jobs/);
+  });
 });

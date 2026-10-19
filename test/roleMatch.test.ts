@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { findRoleMatch } from "../src/vacancy/roleMatch.ts";
+import { findRoleMatch, titleMentionsConfiguredRole } from "../src/vacancy/roleMatch.ts";
 
 describe("findRoleMatch", () => {
   it("matches Russian front-end title without English role strings", () => {
@@ -14,5 +14,23 @@ describe("findRoleMatch", () => {
     const haystack = "hiring senior react developer remote";
     const match = findRoleMatch(haystack, ["React Developer"]);
     assert.equal(match?.label, "React Developer");
+  });
+});
+
+describe("titleMentionsConfiguredRole", () => {
+  it("returns true when title contains a configured role phrase", () => {
+    assert.equal(
+      titleMentionsConfiguredRole("Senior React Developer", ["React Developer"]),
+      true,
+    );
+  });
+
+  it("returns false when title has no configured role phrase", () => {
+    assert.equal(
+      titleMentionsConfiguredRole("Разработчик front-end (JavaScript)", [
+        "Frontend Developer",
+      ]),
+      false,
+    );
   });
 });

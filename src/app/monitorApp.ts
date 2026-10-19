@@ -66,6 +66,7 @@ export async function startMonitorApplication(
 
   const messageDeps = {
     analyzer,
+    filterRoles: config.filters.roles,
     telegramClient,
     notificationTargetId,
     notificationTargetTitle: config.notifications.targetTitle,

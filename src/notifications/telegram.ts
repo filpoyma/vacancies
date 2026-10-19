@@ -2,6 +2,7 @@ import type { TelegramClient } from "teleproto";
 import type { EntityLike } from "teleproto/define";
 import { getTelegramDialogs } from "../telegram/dialogs.ts";
 import type { IMatchResult, IParsedVacancy } from "../vacancy/types.ts";
+import { titleMentionsConfiguredRole } from "../vacancy/roleMatch.ts";
 import { createLogger } from "../utils/logger.ts";
 
 const log = createLogger("Notification");
@@ -38,12 +39,32 @@ function formatSalaryLine(parsed: IParsedVacancy): string | undefined {
   return `${min} ${currency}`.trim();
 }
 
+export function formatShortVacancyNotificationMessage(
+  parsed: IParsedVacancy,
+  vacancyUrl?: string,
+): string {
+  const title = escapeHtml(parsed.title ?? "Vacancy");
+  const lines: string[] = [title];
+
+  if (vacancyUrl !== undefined && vacancyUrl.trim() !== "") {
+    const safeUrl = escapeHtml(vacancyUrl.trim());
+    lines.push(`<a href="${safeUrl}">🔗 Open vacancy</a>`);
+  }
+
+  return lines.join("\n");
+}
+
 export function formatVacancyNotificationMessage(
   parsed: IParsedVacancy,
   match: IMatchResult,
   sourceTitle: string,
   vacancyUrl?: string,
+  configuredRoles: string[] = [],
 ): string {
+  if (titleMentionsConfiguredRole(parsed.title, configuredRoles)) {
+    return formatShortVacancyNotificationMessage(parsed, vacancyUrl);
+  }
+
   const title = escapeHtml(parsed.title ?? "Vacancy");
   const lines: string[] = [
     "🔥 <b>НОВАЯ ВАКАНСИЯ</b>",
@@ -117,12 +138,14 @@ export async function sendVacancyNotification(
   match: IMatchResult,
   sourceTitle: string,
   vacancyUrl?: string,
+  configuredRoles: string[] = [],
 ): Promise<void> {
   const message = formatVacancyNotificationMessage(
     parsed,
     match,
     sourceTitle,
     vacancyUrl,
+    configuredRoles,
   );
 
   await client.sendMessage(target, {

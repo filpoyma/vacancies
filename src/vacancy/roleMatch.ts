@@ -35,3 +35,23 @@ export function findRoleMatch(
 
   return undefined;
 }
+
+/** True when the vacancy title mentions a role from config filters.roles. */
+export function titleMentionsConfiguredRole(
+  title: string | undefined,
+  configuredRoles: string[],
+): boolean {
+  if (title === undefined || title.trim() === "") {
+    return false;
+  }
+
+  const haystack = normalizeText(title);
+  for (const role of configuredRoles) {
+    const normalizedRole = normalizeText(role);
+    if (normalizedRole !== "" && haystack.includes(normalizedRole)) {
+      return true;
+    }
+  }
+
+  return false;
+}

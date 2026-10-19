@@ -9,6 +9,7 @@ import type { IVacancyAnalyzer } from "./types.ts";
 
 export interface IHandleMessageDeps {
   analyzer: IVacancyAnalyzer;
+  filterRoles: string[];
   telegramClient: TelegramClient;
   notificationTargetId: EntityLike;
   notificationTargetTitle: string;
@@ -83,6 +84,7 @@ export async function handleRawMessage(
       matchResult,
       sourceTitle,
       vacancyUrl,
+      deps.filterRoles,
     );
     notificationLog.info(`Sent to "${deps.notificationTargetTitle}"`);
   } catch (error: unknown) {
