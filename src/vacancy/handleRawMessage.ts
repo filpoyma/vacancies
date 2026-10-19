@@ -4,11 +4,11 @@ import { sendVacancyNotification } from "../notifications/telegram.ts";
 import type { IRawTelegramMessage } from "../telegram/types.ts";
 import { createLogger, type TAppLogger } from "../utils/logger.ts";
 import { upsertVacancy } from "./deduplicator.ts";
-import type { IVacancyMatcher } from "./types.ts";
-import { parseVacancy } from "./parser.ts";
+import { mightBeVacancyCandidate } from "./parser.ts";
+import type { IVacancyAnalyzer } from "./types.ts";
 
 export interface IHandleMessageDeps {
-  matcher: IVacancyMatcher;
+  analyzer: IVacancyAnalyzer;
   telegramClient: TelegramClient;
   notificationTargetId: EntityLike;
   notificationTargetTitle: string;
@@ -20,14 +20,20 @@ export async function handleRawMessage(
   log: TAppLogger,
   deps: IHandleMessageDeps,
 ): Promise<void> {
-  const parsed = parseVacancy(rawMessage.rawText);
-
-  if (!parsed.isVacancy) {
-    log.info("Not a vacancy");
+  if (!mightBeVacancyCandidate(rawMessage.rawText)) {
+    log.info("Skipped: does not look like a vacancy candidate");
     return;
   }
 
-  log.info("Vacancy detected");
+  const analysis = await deps.analyzer.analyze(rawMessage.rawText);
+  const { parsed, match: matchResult, usedAi } = analysis;
+
+  if (!parsed.isVacancy) {
+    log.info(usedAi === true ? "AI: not a vacancy" : "Not a vacancy");
+    return;
+  }
+
+  log.info(usedAi === true ? "Vacancy detected (AI)" : "Vacancy detected");
 
   const title = parsed.title ?? "Untitled";
   const skills =
@@ -42,9 +48,11 @@ export async function handleRawMessage(
     log.info(`Salary: ${parsed.salary.min}${maxPart} ${currency}`.trim());
   }
 
-  const matchResult = await deps.matcher.match(parsed);
   const matcherLog = createLogger("Matcher");
   matcherLog.info(`Score: ${matchResult.score}`);
+  if (matchResult.reasons.length > 0) {
+    matcherLog.info(`Reasons: ${matchResult.reasons.slice(0, 3).join("; ")}`);
+  }
 
   const dbLog = createLogger("Database");
   const { vacancy, isNew } = await upsertVacancy(parsed, rawMessage);

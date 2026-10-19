@@ -1,10 +1,13 @@
 import type { IFiltersConfig } from "../config/types.ts";
+import { textContainsKeyword } from "./keywordMatch.ts";
 import { normalizeSkill, normalizeText } from "./normalizer.ts";
+import { findRoleMatch } from "./roleMatch.ts";
 import type { IMatchResult, IParsedVacancy, IVacancyMatcher } from "./types.ts";
 
 const SKILL_WEIGHTS: Record<string, number> = {
   react: 20,
   typescript: 15,
+  javascript: 15,
   "node.js": 15,
   "react native": 15,
 };
@@ -54,12 +57,10 @@ export class RuleBasedMatcher implements IVacancyMatcher {
       reasons.push(`+${weight} ${canonical}`);
     }
 
-    for (const role of this.filters.roles) {
-      if (haystack.includes(normalizeText(role))) {
-        score += ROLE_KEYWORD_WEIGHT;
-        reasons.push(`+${ROLE_KEYWORD_WEIGHT} role: ${role}`);
-        break;
-      }
+    const roleMatch = findRoleMatch(haystack, this.filters.roles);
+    if (roleMatch !== undefined) {
+      score += ROLE_KEYWORD_WEIGHT;
+      reasons.push(`+${ROLE_KEYWORD_WEIGHT} role: ${roleMatch.label}`);
     }
 
     if (haystack.includes("fullstack") || haystack.includes("full stack")) {
@@ -78,7 +79,7 @@ export class RuleBasedMatcher implements IVacancyMatcher {
     }
 
     for (const keyword of this.filters.excludedKeywords) {
-      if (haystack.includes(normalizeText(keyword))) {
+      if (textContainsKeyword(haystack, keyword)) {
         score += EXCLUDED_KEYWORD_PENALTY;
         reasons.push(`${EXCLUDED_KEYWORD_PENALTY} ${keyword}`);
       }

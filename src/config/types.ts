@@ -34,8 +34,14 @@ export interface ITelegramConfig {
   sources: ISourceConfig[];
 }
 
+export interface IAiConfig {
+  /** Extra instructions for the OpenRouter vacancy analyzer (natural language). */
+  candidateProfilePrompt?: string;
+}
+
 export interface IAppConfig {
   telegram: ITelegramConfig;
   filters: IFiltersConfig;
   notifications: INotificationsConfig;
+  ai?: IAiConfig;
 }

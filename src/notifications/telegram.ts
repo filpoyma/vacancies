@@ -65,6 +65,11 @@ export function formatVacancyNotificationMessage(
 
   lines.push(`🎯 Match: ${match.score}%`, "");
 
+  if (match.reasons.length > 0) {
+    const summary = match.reasons.slice(0, 2).map((reason) => escapeHtml(reason));
+    lines.push(`💡 ${summary.join(" · ")}`, "");
+  }
+
   if (parsed.skills.length > 0) {
     lines.push("Skills:", escapeHtml(parsed.skills.join(", ")), "");
   }

@@ -284,7 +284,7 @@ export const config: IAppConfig = {
       "Senior Frontend Developer",
     ],
 
-    skills: ["React", "React Native", "TypeScript", "Node.js"],
+    skills: ["React", "React Native", "TypeScript", "JavaScript", "Node.js"],
 
     excludedKeywords: ["PHP", "WordPress", "1C", "Python", "Java", "C#", "Ruby", "Go", "Scala", "Rust"],
 
@@ -296,6 +296,13 @@ export const config: IAppConfig = {
     remoteOnly: true,
 
     minMatchScore: 60,
+  },
+
+  ai: {
+    candidateProfilePrompt:
+      "Ищу frontend или fullstack с фокусом на React, TypeScript, JavaScript и Node.js. " +
+      "Remote обязателен. Python, Java или Go на бэкенде допустимы, если основная роль — фронт/React. " +
+      "Не интересуют вакансии, где основной стек PHP, WordPress, 1C, mobile native (Swift/Kotlin) без React.",
   },
 
   notifications: {

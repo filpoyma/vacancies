@@ -46,6 +46,44 @@ describe("RuleBasedMatcher", () => {
     assert.ok(result.reasons.some((reason) => reason.includes("WordPress")));
   });
 
+  it("does not penalize JavaScript vacancies for Java exclusion", async () => {
+    const filtersWithJava: IFiltersConfig = {
+      ...filters,
+      excludedKeywords: ["Java"],
+      minMatchScore: 50,
+    };
+    const matcher = new RuleBasedMatcher(filtersWithJava);
+    const result = await matcher.match({
+      ...vacancy,
+      title: "Front-end Developer (JavaScript)",
+      description: "Remote. React and JavaScript. Node.js.",
+      skills: ["react", "javascript", "node.js"],
+    });
+
+    assert.ok(!result.reasons.some((reason) => reason.includes("Java")));
+    assert.ok(result.score >= 50);
+  });
+
+  it("scores Russian front-end JavaScript vacancy above threshold", async () => {
+    const matcher = new RuleBasedMatcher({
+      ...filters,
+      skills: ["React", "JavaScript", "Node.js", "TypeScript"],
+      minMatchScore: 60,
+    });
+    const result = await matcher.match({
+      isVacancy: true,
+      title: "Разработчик front-end (JavaScript)",
+      description:
+        "Формат работы: удалённо. React.js, Node.js, знания Javascript.",
+      skills: ["react", "javascript", "node.js"],
+      remote: true,
+    });
+
+    assert.equal(result.isRelevant, true);
+    assert.ok(result.reasons.some((reason) => reason.includes("javascript")));
+    assert.ok(result.reasons.some((reason) => reason.includes("front-end")));
+  });
+
   it("uses minMatchScore from config, not hardcoded value", async () => {
     const strictFilters: IFiltersConfig = {
       ...filters,

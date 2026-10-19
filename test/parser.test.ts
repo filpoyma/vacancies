@@ -46,6 +46,18 @@ https://example.com/jobs/1
     assert.equal(parsed.contact, "jobs@acme.dev");
   });
 
+  it("parses Russian salary with до", () => {
+    const text = `
+Разработчик front-end (JavaScript)
+до 250 000 ₽ за месяц, до вычета налогов
+Удалённо. React, Node.js
+    `.trim();
+
+    const parsed = parseVacancy(text);
+    assert.equal(parsed.salary?.currency, "RUB");
+    assert.equal(parsed.salary?.min, 250000);
+  });
+
   it("rejects casual chat message", () => {
     const parsed = parseVacancy("Привет! Кто смотрел матч вчера?");
     assert.equal(parsed.isVacancy, false);

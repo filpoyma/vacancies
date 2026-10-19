@@ -27,3 +27,14 @@ export interface IMatchResult {
 export interface IVacancyMatcher {
   match(vacancy: IParsedVacancy): Promise<IMatchResult>;
 }
+
+export interface IAnalysisResult {
+  parsed: IParsedVacancy;
+  match: IMatchResult;
+  /** true when OpenRouter produced the result */
+  usedAi?: boolean;
+}
+
+export interface IVacancyAnalyzer {
+  analyze(rawText: string): Promise<IAnalysisResult>;
+}

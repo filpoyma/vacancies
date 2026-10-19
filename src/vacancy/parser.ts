@@ -81,6 +81,14 @@ function extractSalary(text: string): ISalaryInfo | undefined {
     }
   }
 
+  const rubUpTo = /до\s+([\d\s]+)\s*(?:₽|руб\.?|rub)/i.exec(text);
+  if (rubUpTo !== null) {
+    const amount = Number.parseInt(rubUpTo[1].replace(/\s/g, ""), 10);
+    if (Number.isFinite(amount)) {
+      return { min: amount, currency: "RUB" };
+    }
+  }
+
   const eurRange =
     /([\d][\d,]*)\s*(?:-|–|—)\s*([\d][\d,]*)\s*(?:€|eur)/i.exec(text);
   if (eurRange !== null) {
@@ -187,6 +195,25 @@ function looksLikeVacancy(text: string, salary?: ISalaryInfo, skills: string[] =
   }
   if (salary !== undefined && skills.length >= 2) {
     return true;
+  }
+  return false;
+}
+
+const MIN_LENGTH_FOR_AI_CANDIDATE = 80;
+
+/** Cheap filter before calling OpenRouter. */
+export function mightBeVacancyCandidate(rawText: string): boolean {
+  const text = normalizeWhitespace(rawText);
+  if (text.length < 40) {
+    return false;
+  }
+  if (hasVacancySignal(text)) {
+    return true;
+  }
+  if (text.length >= MIN_LENGTH_FOR_AI_CANDIDATE) {
+    return /(react|typescript|javascript|node\.?js|frontend|fullstack|вакансия|разработчик|удал|remote|hiring|salary|зарплат)/i.test(
+      text,
+    );
   }
   return false;
 }

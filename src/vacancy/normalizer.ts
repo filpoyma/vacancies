@@ -1,3 +1,4 @@
+import { textContainsSkillTerm } from "./keywordMatch.ts";
 import type { IParsedVacancy, ISalaryInfo } from "./types.ts";
 
 const URL_PATTERN = /https?:\/\/[^\s)>]+/gi;
@@ -109,7 +110,7 @@ export function detectSkillsFromText(text: string): string[] {
   const found = new Set<string>();
 
   for (const term of SKILL_SEARCH_ORDER) {
-    if (!haystack.includes(term)) {
+    if (!textContainsSkillTerm(haystack, term)) {
       continue;
     }
     const canonical = SKILL_ALIAS_TO_CANONICAL[term];

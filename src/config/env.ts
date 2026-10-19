@@ -9,8 +9,15 @@ export interface ITelegramEnv {
   telegramApiHash: string;
 }
 
+export interface IOpenRouterEnv {
+  apiKey?: string;
+  model: string;
+  enabled: boolean;
+}
+
 export interface IEnv extends ITelegramEnv {
   mongodbUri: string;
+  openRouter: IOpenRouterEnv;
 }
 
 function missingVar(name: string): never {
@@ -61,7 +68,24 @@ export function loadEnv(): IEnv {
   cachedEnv = {
     ...loadTelegramEnv(),
     mongodbUri: requireNonEmpty("MONGODB_URI", process.env.MONGODB_URI),
+    openRouter: loadOpenRouterEnv(),
   };
 
   return cachedEnv;
+}
+
+const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.5-flash";
+
+export function loadOpenRouterEnv(): IOpenRouterEnv {
+  const rawKey = process.env.OPENROUTER_API_KEY?.trim();
+  const apiKey = rawKey === undefined || rawKey === "" ? undefined : rawKey;
+  const rawModel = process.env.OPENROUTER_MODEL?.trim();
+  const model =
+    rawModel === undefined || rawModel === "" ? DEFAULT_OPENROUTER_MODEL : rawModel;
+
+  return {
+    apiKey,
+    model,
+    enabled: apiKey !== undefined,
+  };
 }

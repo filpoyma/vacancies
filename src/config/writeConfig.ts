@@ -59,6 +59,19 @@ function formatStringList(values: string[], indent: string): string {
   return values.map((value) => `${indent}${quoteString(value)},`).join("\n");
 }
 
+function formatAiBlock(config: IAppConfig): string {
+  const prompt = config.ai?.candidateProfilePrompt?.trim();
+  if (prompt === undefined || prompt === "") {
+    return "";
+  }
+
+  return `
+  ai: {
+    candidateProfilePrompt: ${quoteString(prompt)},
+  },
+`;
+}
+
 export function formatAppConfigFile(config: IAppConfig): string {
   const sourcesBlock = config.telegram.sources
     .map(sanitizeSourceConfig)
@@ -92,7 +105,7 @@ ${formatStringList(config.filters.roles, "      ")}
 
     minMatchScore: ${config.filters.minMatchScore},
   },
-
+${formatAiBlock(config)}
   notifications: {
     target: ${quoteString(config.notifications.target)},
     targetTitle: ${quoteString(config.notifications.targetTitle)},

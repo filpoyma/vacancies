@@ -9,8 +9,8 @@ import {
 } from "../telegram/client.ts";
 import { startCollector } from "../telegram/collector.ts";
 import type { Unsubscribe } from "teleproto/client/updates/composer";
+import { createVacancyAnalyzer } from "../vacancy/aiAnalyzer.ts";
 import { handleRawMessage } from "../vacancy/handleRawMessage.ts";
-import { RuleBasedMatcher } from "../vacancy/matcher.ts";
 import { createLogger } from "../utils/logger.ts";
 import type { IShutdownController } from "./shutdown.ts";
 
@@ -56,11 +56,16 @@ export async function startMonitorApplication(
       ]),
   );
 
-  const matcher = new RuleBasedMatcher(config.filters);
+  const analyzer = createVacancyAnalyzer(
+    config.filters,
+    config.ai,
+    env.openRouter,
+    createLogger("AI"),
+  );
   const parserLog = createLogger("Parser");
 
   const messageDeps = {
-    matcher,
+    analyzer,
     telegramClient,
     notificationTargetId,
     notificationTargetTitle: config.notifications.targetTitle,

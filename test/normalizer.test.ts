@@ -28,6 +28,15 @@ describe("normalizer", () => {
     assert.ok(skills.includes("node.js"));
   });
 
+  it("does not detect Java from JavaScript", () => {
+    const skills = detectSkillsFromText(
+      "Front-end (JavaScript), React.js, знания Javascript",
+    );
+    assert.ok(skills.includes("javascript"));
+    assert.ok(skills.includes("react"));
+    assert.equal(skills.includes("java"), false);
+  });
+
   it("deduplicates skills after normalization", () => {
     const skills = normalizeSkills(["reactjs", "React.js", "react"]);
     assert.deepEqual(skills, ["react"]);
