@@ -26,6 +26,7 @@ export async function sendApplyForVacancy(
       input.recipient,
       input.assets.coverLetterText,
       resumePath,
+      input.vacancyTitle,
     );
     return;
   }

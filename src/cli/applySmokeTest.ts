@@ -113,6 +113,7 @@ async function main(): Promise<void> {
         options.telegramRecipient,
         coverLetter,
         resumePath,
+        `[SMOKE TEST] vacancy-monitor (${options.profile})`,
       );
       log.info("Telegram smoke test sent");
     } finally {
