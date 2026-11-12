@@ -41,7 +41,7 @@ export async function handleSendToCommand(
   let recipient = command.recipient;
   let vacancyTitle: string | undefined;
 
-  if (command.channel === "email") {
+  if (command.channel === "email" && command.recipient === "") {
     if (replyToMsgId === undefined) {
       await replyStatus(
         deps.telegramClient,
@@ -82,16 +82,6 @@ export async function handleSendToCommand(
 
     recipient = target.recipient;
     vacancyTitle = context.vacancyTitle;
-
-    if (!deps.gmail.enabled) {
-      await replyStatus(
-        deps.telegramClient,
-        deps.notificationTarget,
-        replyToMsgId,
-        "Gmail SMTP не настроен (GMAIL_APP_PASSWORD)",
-      );
-      return;
-    }
   } else if (replyToMsgId !== undefined) {
     const context = await fetchNotificationReplyContext(
       deps.telegramClient,
@@ -100,6 +90,16 @@ export async function handleSendToCommand(
       replyToMsgId,
     );
     vacancyTitle = context?.vacancyTitle;
+  }
+
+  if (command.channel === "email" && !deps.gmail.enabled) {
+    await replyStatus(
+      deps.telegramClient,
+      deps.notificationTarget,
+      replyToMsgId,
+      "Gmail SMTP не настроен (GMAIL_APP_PASSWORD)",
+    );
+    return;
   }
 
   try {

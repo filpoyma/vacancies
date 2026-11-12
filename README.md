@@ -116,7 +116,9 @@ If the post contains a Telegram `@contact` or email and `apply.enabled` is true,
 Manual send on a vacancy message in **«Сохраненные вакансии»** (reply to the notification):
 
 - `/sendto @username frontend` or `fullstack` — CV + cover letter to Telegram
+- `/sendto you@example.com frontend` or `fullstack` — CV + cover letter to that email
 - `/sendto email frontend` or `fullstack` — to the email found in that vacancy message (reply required)
+- Invalid `/sendto …` gets a usage reply instead of being ignored
 
 ### Smoke test (Telegram + email delivery)
 

@@ -103,49 +103,72 @@ async function main(): Promise<void> {
   log.info(`Profile: ${options.profile}`);
   log.info(`Resume: ${resumePath}`);
 
+  let sentCount = 0;
+
   if (runTelegram) {
     if (!env.applySend.telegramSendEnabled) {
-      throw new Error(
-        "Telegram smoke test blocked: TELEGRAM_SEND_ENABLE=false",
+      if (options.telegramOnly) {
+        throw new Error(
+          "Telegram smoke test blocked: TELEGRAM_SEND_ENABLE=false",
+        );
+      }
+      log.warn(
+        "Skipping Telegram smoke test (TELEGRAM_SEND_ENABLE=false)",
       );
-    }
-    log.info(`Telegram → ${options.telegramRecipient}`);
-    const client = createTelegramClient(env);
-    try {
-      await connectAuthorizedUser(client);
-      await sendTelegramApply(
-        client,
-        options.telegramRecipient,
-        coverLetter,
-        resumePath,
-        `[SMOKE TEST] vacancy-monitor (${options.profile})`,
-      );
-      log.info("Telegram smoke test sent");
-    } finally {
-      await disconnectTelegramClient(client);
+    } else {
+      log.info(`Telegram → ${options.telegramRecipient}`);
+      const client = createTelegramClient(env);
+      try {
+        await connectAuthorizedUser(client);
+        await sendTelegramApply(
+          client,
+          options.telegramRecipient,
+          coverLetter,
+          resumePath,
+          `[SMOKE TEST] vacancy-monitor (${options.profile})`,
+        );
+        log.info("Telegram smoke test sent");
+        sentCount += 1;
+      } finally {
+        await disconnectTelegramClient(client);
+      }
     }
   }
 
   if (runEmail) {
     if (!env.applySend.emailSendEnabled) {
-      throw new Error("Email smoke test blocked: EMAIL_SEND_ENABLE=false");
-    }
-    if (!env.gmail.enabled) {
-      throw new Error(
-        "Gmail SMTP not configured. Set GMAIL_APP_PASSWORD in .env for email smoke test.",
+      if (options.emailOnly) {
+        throw new Error("Email smoke test blocked: EMAIL_SEND_ENABLE=false");
+      }
+      log.warn("Skipping Email smoke test (EMAIL_SEND_ENABLE=false)");
+    } else if (!env.gmail.enabled) {
+      if (options.emailOnly) {
+        throw new Error(
+          "Gmail SMTP not configured. Set GMAIL_APP_PASSWORD in .env for email smoke test.",
+        );
+      }
+      log.warn(
+        "Skipping Email smoke test (GMAIL_APP_PASSWORD not set)",
       );
+    } else {
+      log.info(`Email → ${options.emailRecipient}`);
+      const subject = `[SMOKE TEST] vacancy-monitor apply (${options.profile})`;
+      await sendEmailApply(
+        env.gmail,
+        options.emailRecipient,
+        subject,
+        coverLetter,
+        resumePath,
+      );
+      log.info("Email smoke test sent");
+      sentCount += 1;
     }
+  }
 
-    log.info(`Email → ${options.emailRecipient}`);
-    const subject = `[SMOKE TEST] vacancy-monitor apply (${options.profile})`;
-    await sendEmailApply(
-      env.gmail,
-      options.emailRecipient,
-      subject,
-      coverLetter,
-      resumePath,
+  if (sentCount === 0) {
+    throw new Error(
+      "Smoke test sent nothing — enable TELEGRAM_SEND_ENABLE and/or EMAIL_SEND_ENABLE (and Gmail), or use --telegram-only / --email-only",
     );
-    log.info("Email smoke test sent");
   }
 
   log.info("Smoke test finished");
