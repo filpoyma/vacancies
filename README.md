@@ -46,6 +46,8 @@ Fill in `.env` (see below). Application settings (sources, filters) live in [`co
 | `LOG_PRETTY` | No | Set `true` for human-readable dev logs (used by `npm run dev`) |
 | `GMAIL_USER` | No | Sender for email applications (default `filpoyma@gmail.com`) |
 | `GMAIL_APP_PASSWORD` | No | [Google App Password](https://myaccount.google.com/apppasswords) for SMTP; required for email apply |
+| `TELEGRAM_SEND_ENABLE` | No | `true` / `false` — disable Telegram applications (auto, `/send`, `/sendto`) when `false` |
+| `EMAIL_SEND_ENABLE` | No | `true` / `false` — disable email applications when `false` |
 
 **Never commit** `.env` or `data/session/` — they are in `.gitignore`. The Telegram session is equivalent to your account login.
 

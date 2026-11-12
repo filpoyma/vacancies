@@ -104,6 +104,11 @@ async function main(): Promise<void> {
   log.info(`Resume: ${resumePath}`);
 
   if (runTelegram) {
+    if (!env.applySend.telegramSendEnabled) {
+      throw new Error(
+        "Telegram smoke test blocked: TELEGRAM_SEND_ENABLE=false",
+      );
+    }
     log.info(`Telegram → ${options.telegramRecipient}`);
     const client = createTelegramClient(env);
     try {
@@ -122,6 +127,9 @@ async function main(): Promise<void> {
   }
 
   if (runEmail) {
+    if (!env.applySend.emailSendEnabled) {
+      throw new Error("Email smoke test blocked: EMAIL_SEND_ENABLE=false");
+    }
     if (!env.gmail.enabled) {
       throw new Error(
         "Gmail SMTP not configured. Set GMAIL_APP_PASSWORD in .env for email smoke test.",

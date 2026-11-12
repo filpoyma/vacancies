@@ -1,6 +1,7 @@
 import type { TelegramClient } from "teleproto";
 import type { EntityLike } from "teleproto/define";
-import type { IGmailEnv } from "../config/env.ts";
+import type { IApplySendEnv, IGmailEnv } from "../config/env.ts";
+import { assertApplyChannelSendEnabled } from "./sendApplyForVacancy.ts";
 import { createLogger } from "../utils/logger.ts";
 import { extractApplyTargetFromText } from "./extractApplyTarget.ts";
 import { fetchNotificationReplyContext } from "./notificationReplyContext.ts";
@@ -16,6 +17,7 @@ export interface ISendToCommandDeps {
   assets: IResolvedApplyAssets;
   telegramClient: TelegramClient;
   gmail: IGmailEnv;
+  applySend: IApplySendEnv;
 }
 
 async function replyStatus(
@@ -100,6 +102,19 @@ export async function handleSendToCommand(
     vacancyTitle = context?.vacancyTitle;
   }
 
+  try {
+    assertApplyChannelSendEnabled(command.channel, deps.applySend);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    await replyStatus(
+      deps.telegramClient,
+      deps.notificationTarget,
+      replyToMsgId,
+      message,
+    );
+    return;
+  }
+
   log.info(
     `Manual sendto ${command.channel} ${recipient} (${command.profile})`,
   );
@@ -113,6 +128,7 @@ export async function handleSendToCommand(
       assets: deps.assets,
       telegramClient: deps.telegramClient,
       gmail: deps.gmail,
+      applySend: deps.applySend,
     });
 
     await replyStatus(

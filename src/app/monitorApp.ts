@@ -55,7 +55,14 @@ export async function startMonitorApplication(
   let applyAssets: Awaited<ReturnType<typeof loadApplyAssets>> | undefined;
   if (config.apply.enabled) {
     applyAssets = await loadApplyAssets(config.apply);
-    createLogger("Apply").info("Apply assets loaded");
+    const applyLog = createLogger("Apply");
+    applyLog.info("Apply assets loaded");
+    if (!env.applySend.telegramSendEnabled) {
+      applyLog.warn("Telegram apply sending is disabled (TELEGRAM_SEND_ENABLE=false)");
+    }
+    if (!env.applySend.emailSendEnabled) {
+      applyLog.warn("Email apply sending is disabled (EMAIL_SEND_ENABLE=false)");
+    }
   } else {
     createLogger("Apply").info("Apply flow disabled in config");
   }
@@ -83,7 +90,7 @@ export async function startMonitorApplication(
     applyConfig: config.apply,
     applyAssets,
     gmail: env.gmail,
-    gmailEnabled: env.gmail.enabled,
+    applySend: env.applySend,
     notificationChatId,
     telegramClient,
     notificationTargetId,
@@ -124,6 +131,7 @@ export async function startMonitorApplication(
         assets: applyAssets,
         telegramClient,
         gmail: env.gmail,
+        applySend: env.applySend,
       },
       {
         isActive: () => acceptingMessages && !shutdownController.isShuttingDown(),

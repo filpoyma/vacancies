@@ -21,10 +21,16 @@ export interface IGmailEnv {
   enabled: boolean;
 }
 
+export interface IApplySendEnv {
+  telegramSendEnabled: boolean;
+  emailSendEnabled: boolean;
+}
+
 export interface IEnv extends ITelegramEnv {
   mongodbUri: string;
   openRouter: IOpenRouterEnv;
   gmail: IGmailEnv;
+  applySend: IApplySendEnv;
 }
 
 function missingVar(name: string): never {
@@ -42,6 +48,26 @@ function parseTelegramApiId(raw: string | undefined): number {
     throw new Error("TELEGRAM_API_ID must be a positive integer.");
   }
   return value;
+}
+
+export function parseEnvBoolean(
+  name: string,
+  raw: string | undefined,
+  defaultValue: boolean,
+): boolean {
+  if (raw === undefined || raw.trim() === "") {
+    return defaultValue;
+  }
+
+  const value = raw.trim().toLowerCase();
+  if (value === "true" || value === "1" || value === "yes") {
+    return true;
+  }
+  if (value === "false" || value === "0" || value === "no") {
+    return false;
+  }
+
+  throw new Error(`${name} must be true or false (got "${raw}").`);
 }
 
 function requireNonEmpty(name: string, raw: string | undefined): string {
@@ -77,6 +103,7 @@ export function loadEnv(): IEnv {
     mongodbUri: requireNonEmpty("MONGODB_URI", process.env.MONGODB_URI),
     openRouter: loadOpenRouterEnv(),
     gmail: loadGmailEnv(),
+    applySend: loadApplySendEnv(),
   };
 
   return cachedEnv;
@@ -112,5 +139,20 @@ export function loadGmailEnv(): IGmailEnv {
     user,
     appPassword,
     enabled: appPassword !== undefined,
+  };
+}
+
+export function loadApplySendEnv(): IApplySendEnv {
+  return {
+    telegramSendEnabled: parseEnvBoolean(
+      "TELEGRAM_SEND_ENABLE",
+      process.env.TELEGRAM_SEND_ENABLE,
+      true,
+    ),
+    emailSendEnabled: parseEnvBoolean(
+      "EMAIL_SEND_ENABLE",
+      process.env.EMAIL_SEND_ENABLE,
+      true,
+    ),
   };
 }

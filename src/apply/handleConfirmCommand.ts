@@ -1,6 +1,6 @@
 import type { TelegramClient } from "teleproto";
 import type { EntityLike } from "teleproto/define";
-import type { IGmailEnv } from "../config/env.ts";
+import type { IApplySendEnv, IGmailEnv } from "../config/env.ts";
 import { createLogger } from "../utils/logger.ts";
 import { executePendingApplication } from "./executePendingApplication.ts";
 import { findPendingByDraftMessage } from "./pendingApplicationStore.ts";
@@ -17,6 +17,7 @@ export interface IConfirmCommandDeps {
   assets: IResolvedApplyAssets;
   telegramClient: TelegramClient;
   gmail: IGmailEnv;
+  applySend: IApplySendEnv;
 }
 
 export interface IConfirmCommandServices {
@@ -110,6 +111,7 @@ export async function handleConfirmCommandMessage(
       deps.assets,
       deps.telegramClient,
       deps.gmail,
+      deps.applySend,
     );
 
     const channelLabel =

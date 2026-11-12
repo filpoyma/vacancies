@@ -40,6 +40,7 @@ const baseDeps = {
     sendMessage: async () => ({}),
   } as never,
   gmail: { enabled: false },
+  applySend: { telegramSendEnabled: true, emailSendEnabled: true },
 };
 
 describe("handleConfirmCommandMessage", () => {

@@ -13,7 +13,7 @@ import {
 import { sendApplyForVacancy } from "../apply/sendApplyForVacancy.ts";
 import type { IApplyTarget, IResolvedApplyAssets } from "../apply/types.ts";
 import type { IApplyConfig } from "../config/types.ts";
-import type { IGmailEnv } from "../config/env.ts";
+import type { IApplySendEnv, IGmailEnv } from "../config/env.ts";
 import { sendVacancyNotification } from "../notifications/telegram.ts";
 import type { IRawTelegramMessage } from "../telegram/types.ts";
 import { createLogger, type TAppLogger } from "../utils/logger.ts";
@@ -27,7 +27,7 @@ export interface IHandleMessageDeps {
   applyConfig: IApplyConfig;
   applyAssets?: IResolvedApplyAssets;
   gmail: IGmailEnv;
-  gmailEnabled: boolean;
+  applySend: IApplySendEnv;
   notificationChatId: string;
   telegramClient: TelegramClient;
   notificationTargetId: EntityLike;
@@ -108,7 +108,18 @@ export async function handleRawMessage(
     );
 
     if (applyTarget !== undefined) {
-      if (applyTarget.channel === "email" && !deps.gmailEnabled) {
+      if (
+        applyTarget.channel === "telegram" &&
+        !deps.applySend.telegramSendEnabled
+      ) {
+        applyLog.warn(
+          "Telegram apply skipped: TELEGRAM_SEND_ENABLE=false",
+        );
+        applyTarget = undefined;
+      } else if (applyTarget.channel === "email" && !deps.applySend.emailSendEnabled) {
+        applyLog.warn("Email apply skipped: EMAIL_SEND_ENABLE=false");
+        applyTarget = undefined;
+      } else if (applyTarget.channel === "email" && !deps.gmail.enabled) {
         applyLog.warn(
           `Vacancy has email contact ${applyTarget.recipient}, but Gmail SMTP is not configured — skipping apply`,
         );
@@ -180,6 +191,7 @@ export async function handleRawMessage(
         assets: deps.applyAssets,
         telegramClient: deps.telegramClient,
         gmail: deps.gmail,
+        applySend: deps.applySend,
       });
 
       await deps.telegramClient.sendMessage(deps.notificationTargetId, {

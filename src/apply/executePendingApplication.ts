@@ -1,5 +1,5 @@
 import type { TelegramClient } from "teleproto";
-import type { IGmailEnv } from "../config/env.ts";
+import type { IApplySendEnv, IGmailEnv } from "../config/env.ts";
 import type { IPendingApplicationDoc } from "../models/PendingApplication.ts";
 import {
   markPendingApplicationFailed,
@@ -13,6 +13,7 @@ export async function executePendingApplication(
   assets: IResolvedApplyAssets,
   telegramClient: TelegramClient,
   gmail: IGmailEnv,
+  applySend: IApplySendEnv,
 ): Promise<void> {
   try {
     await sendApplyForVacancy({
@@ -23,6 +24,7 @@ export async function executePendingApplication(
       assets,
       telegramClient,
       gmail,
+      applySend,
     });
 
     await markPendingApplicationSent(pending._id);
