@@ -118,6 +118,7 @@ export async function startMonitorApplication(
       notificationTargetId,
       {
         confirmCommand: config.apply.confirmCommand,
+        sendToCommand: config.apply.sendToCommand,
         notificationChatId,
         notificationTarget: notificationTargetId,
         assets: applyAssets,

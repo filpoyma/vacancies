@@ -111,6 +111,11 @@ When a new relevant vacancy arrives: parser → matcher → MongoDB → notifica
 
 If the post contains a Telegram `@contact` or email and `apply.enabled` is true, the worker picks Frontend vs Fullstack from the vacancy text. When the role is **unambiguous**, the application is sent automatically; when **ambiguous**, the notification asks you to reply **`/send`** on that message to confirm. Email apply requires `GMAIL_APP_PASSWORD` in `.env`.
 
+Manual send on a vacancy message in **«Сохраненные вакансии»** (reply to the notification):
+
+- `/sendto @username frontend` or `fullstack` — CV + cover letter to Telegram
+- `/sendto email frontend` or `fullstack` — to the email found in that vacancy message (reply required)
+
 ### Smoke test (Telegram + email delivery)
 
 On the server, after `.env` and Telegram session are set up:

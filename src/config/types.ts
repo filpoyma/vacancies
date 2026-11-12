@@ -39,6 +39,7 @@ export interface IApplyProfileConfig {
 export interface IApplyConfig {
   enabled: boolean;
   confirmCommand: string;
+  sendToCommand: string;
   profiles: Record<TApplyProfileId, IApplyProfileConfig>;
   coverLetterPath: string;
 }

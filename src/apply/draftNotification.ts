@@ -36,5 +36,6 @@ export function formatApplyDraftAppend(
     "———",
     `Отклик: ${recipientLabel} | профиль ${profileLabel}`,
     `Ответьте ${confirmCommand} на это сообщение, чтобы отправить CV + письмо`,
+    "Или: /sendto @username frontend|fullstack · /sendto email frontend|fullstack",
   ].join("\n");
 }

@@ -26,6 +26,7 @@ function createPending(
 
 const baseDeps = {
   confirmCommand: "/send",
+  sendToCommand: "/sendto",
   notificationChatId: "-1001",
   notificationTarget: "-1001",
   assets: {

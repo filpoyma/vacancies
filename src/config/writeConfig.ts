@@ -78,6 +78,7 @@ function formatApplyBlock(config: IAppConfig): string {
   apply: {
     enabled: ${String(apply.enabled)},
     confirmCommand: ${quoteString(apply.confirmCommand)},
+    sendToCommand: ${quoteString(apply.sendToCommand)},
     profiles: {
       frontend: {
         resumePath: ${quoteString(apply.profiles.frontend.resumePath)},

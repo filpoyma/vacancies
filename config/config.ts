@@ -270,6 +270,16 @@ export const config: IAppConfig = {
         name: "СЕТИ — IT & Digital вакансии",
         username: "it_vakansii_jobs",
       },
+      {
+        id: "-1002125935279",
+        name: "IT JOBS (blow)",
+        username: "itblowjobs",
+      },
+      {
+        id: "-1001123895335",
+        name: "Работа в Сколково",
+        username: "jobskolkovo",
+      },
     ],
   },
 
@@ -299,10 +309,7 @@ export const config: IAppConfig = {
   },
 
   ai: {
-    candidateProfilePrompt:
-      "Ищу frontend или fullstack с фокусом на React, TypeScript, JavaScript и Node.js. " +
-      "Remote обязателен. Python, Java или Go на бэкенде допустимы, если основная роль — фронт/React. " +
-      "Не интересуют вакансии, где основной стек PHP, WordPress, 1C, mobile native (Swift/Kotlin) без React.",
+    candidateProfilePrompt: "Ищу frontend или fullstack с фокусом на React, TypeScript, JavaScript и Node.js. Remote обязателен. Python, Java или Go на бэкенде допустимы, если основная роль — фронт/React. Не интересуют вакансии, где основной стек PHP, WordPress, 1C, mobile native (Swift/Kotlin) без React.",
   },
 
   notifications: {
@@ -313,6 +320,7 @@ export const config: IAppConfig = {
   apply: {
     enabled: true,
     confirmCommand: "/send",
+    sendToCommand: "/sendto",
     profiles: {
       frontend: {
         resumePath: "assets/apply/Roman_Pramzin_Frontend_Dev_ru.pdf",

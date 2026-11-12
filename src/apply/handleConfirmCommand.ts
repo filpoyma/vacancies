@@ -11,6 +11,7 @@ const log = createLogger("Apply");
 
 export interface IConfirmCommandDeps {
   confirmCommand: string;
+  sendToCommand: string;
   notificationChatId: string;
   notificationTarget: EntityLike;
   assets: IResolvedApplyAssets;

@@ -27,6 +27,7 @@ const sampleConfig: IAppConfig = {
   apply: {
     enabled: true,
     confirmCommand: "/send",
+    sendToCommand: "/sendto",
     profiles: {
       frontend: { resumePath: "assets/apply/Roman_Pramzin_Frontend_Dev_ru.pdf" },
       fullstack: { resumePath: "assets/apply/Roman_Pramzin_Fullstack_Dev_ru.pdf" },

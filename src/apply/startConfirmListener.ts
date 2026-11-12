@@ -4,10 +4,8 @@ import type { TelegramClient } from "teleproto";
 import type { EntityLike } from "teleproto/define";
 import type { Unsubscribe } from "teleproto/client/updates/composer";
 import { createLogger } from "../utils/logger.ts";
-import {
-  handleConfirmCommandMessage,
-  type IConfirmCommandDeps,
-} from "./handleConfirmCommand.ts";
+import { handleApplyGroupCommand } from "./handleApplyGroupCommand.ts";
+import type { IConfirmCommandDeps } from "./handleConfirmCommand.ts";
 
 const log = createLogger("Apply");
 
@@ -41,7 +39,7 @@ export function startApplyConfirmListener(
         typeof replyToMsgId === "number" ? replyToMsgId : undefined;
 
       try {
-        await handleConfirmCommandMessage(text, replyId, deps);
+        await handleApplyGroupCommand(text, replyId, deps);
       } catch (error: unknown) {
         log.error("Confirm handler error", error);
       }
