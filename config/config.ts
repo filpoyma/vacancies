@@ -309,4 +309,18 @@ export const config: IAppConfig = {
     target: "me",
     targetTitle: "Сохраненные вакансии",
   },
+
+  apply: {
+    enabled: true,
+    confirmCommand: "/send",
+    profiles: {
+      frontend: {
+        resumePath: "assets/apply/Roman_Pramzin_Frontend_Dev_ru.pdf",
+      },
+      fullstack: {
+        resumePath: "assets/apply/Roman_Pramzin_Fullstack_Dev_ru.pdf",
+      },
+    },
+    coverLetterPath: "assets/apply/cover_letter_ru.txt",
+  },
 };

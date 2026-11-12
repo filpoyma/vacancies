@@ -1,5 +1,19 @@
 import type { TelegramClient } from "teleproto";
 import type { EntityLike } from "teleproto/define";
+import {
+  formatApplyAutoNoticeAppend,
+  formatApplyDraftAppend,
+} from "../apply/draftNotification.ts";
+import { extractApplyTarget } from "../apply/extractApplyTarget.ts";
+import { createPendingApplication } from "../apply/pendingApplicationStore.ts";
+import {
+  resolveApplyProfile,
+  type IApplyProfileDecision,
+} from "../apply/selectProfile.ts";
+import { sendApplyForVacancy } from "../apply/sendApplyForVacancy.ts";
+import type { IApplyTarget, IResolvedApplyAssets } from "../apply/types.ts";
+import type { IApplyConfig } from "../config/types.ts";
+import type { IGmailEnv } from "../config/env.ts";
 import { sendVacancyNotification } from "../notifications/telegram.ts";
 import type { IRawTelegramMessage } from "../telegram/types.ts";
 import { createLogger, type TAppLogger } from "../utils/logger.ts";
@@ -10,6 +24,11 @@ import type { IVacancyAnalyzer } from "./types.ts";
 export interface IHandleMessageDeps {
   analyzer: IVacancyAnalyzer;
   filterRoles: string[];
+  applyConfig: IApplyConfig;
+  applyAssets?: IResolvedApplyAssets;
+  gmail: IGmailEnv;
+  gmailEnabled: boolean;
+  notificationChatId: string;
   telegramClient: TelegramClient;
   notificationTargetId: EntityLike;
   notificationTargetTitle: string;
@@ -73,11 +92,46 @@ export async function handleRawMessage(
   }
 
   const notificationLog = createLogger("Notification");
+  const applyLog = createLogger("Apply");
   const sourceTitle = deps.getSourceLabel(rawMessage.sourceId);
   const vacancyUrl = parsed.url ?? rawMessage.telegramMessageUrl;
 
+  let messageAppend: string | undefined;
+  let applyTarget: IApplyTarget | undefined;
+  let profileDecision: IApplyProfileDecision | undefined;
+
+  if (deps.applyConfig.enabled && deps.applyAssets !== undefined) {
+    applyTarget = extractApplyTarget(
+      rawMessage.rawText,
+      parsed.contact,
+      parsed.url,
+    );
+
+    if (applyTarget !== undefined) {
+      if (applyTarget.channel === "email" && !deps.gmailEnabled) {
+        applyLog.warn(
+          `Vacancy has email contact ${applyTarget.recipient}, but Gmail SMTP is not configured — skipping apply`,
+        );
+        applyTarget = undefined;
+      } else {
+        profileDecision = resolveApplyProfile(parsed.title, parsed.description);
+        messageAppend =
+          profileDecision.confidence === "certain"
+            ? formatApplyAutoNoticeAppend(
+                applyTarget,
+                profileDecision.profile,
+              )
+            : formatApplyDraftAppend(
+                applyTarget,
+                profileDecision.profile,
+                deps.applyConfig.confirmCommand,
+              );
+      }
+    }
+  }
+
   try {
-    await sendVacancyNotification(
+    const { messageId } = await sendVacancyNotification(
       deps.telegramClient,
       deps.notificationTargetId,
       parsed,
@@ -85,8 +139,65 @@ export async function handleRawMessage(
       sourceTitle,
       vacancyUrl,
       deps.filterRoles,
+      messageAppend,
     );
     notificationLog.info(`Sent to "${deps.notificationTargetTitle}"`);
+
+    if (
+      applyTarget === undefined ||
+      deps.applyAssets === undefined ||
+      profileDecision === undefined
+    ) {
+      return;
+    }
+
+    const registerPendingForConfirm = async (): Promise<void> => {
+      await createPendingApplication({
+        vacancyId: vacancy._id,
+        fingerprint: vacancy.fingerprint,
+        channel: applyTarget.channel,
+        recipient: applyTarget.recipient,
+        profile: profileDecision.profile,
+        draftMessageId: messageId,
+        notificationChatId: deps.notificationChatId,
+        vacancyTitle: parsed.title,
+        vacancyUrl,
+      });
+      applyLog.info(`Apply draft registered (message ${messageId})`);
+    };
+
+    if (profileDecision.confidence === "ambiguous") {
+      await registerPendingForConfirm();
+      return;
+    }
+
+    try {
+      await sendApplyForVacancy({
+        channel: applyTarget.channel,
+        recipient: applyTarget.recipient,
+        profile: profileDecision.profile,
+        vacancyTitle: parsed.title,
+        assets: deps.applyAssets,
+        telegramClient: deps.telegramClient,
+        gmail: deps.gmail,
+      });
+
+      await deps.telegramClient.sendMessage(deps.notificationTargetId, {
+        message: `Автоотклик: отправлено ${applyTarget.recipient}`,
+        replyTo: messageId,
+        linkPreview: false,
+      });
+      applyLog.info(`Auto-apply sent to ${applyTarget.recipient}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      applyLog.error("Auto-apply failed, falling back to /send confirm", error);
+      await registerPendingForConfirm();
+      await deps.telegramClient.sendMessage(deps.notificationTargetId, {
+        message: `Автоотклик не удался: ${message}\nОтветьте ${deps.applyConfig.confirmCommand} на это сообщение для повторной отправки.`,
+        replyTo: messageId,
+        linkPreview: false,
+      });
+    }
   } catch (error: unknown) {
     notificationLog.error("Failed to send vacancy notification", error);
   }

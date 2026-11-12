@@ -44,6 +44,8 @@ Fill in `.env` (see below). Application settings (sources, filters) live in [`co
 | `MONGODB_URI` | Yes (for `npm run dev`) | MongoDB connection string, e.g. `mongodb://127.0.0.1:27017/vacancy` |
 | `LOG_LEVEL` | No | `trace` … `fatal` (default `info`) |
 | `LOG_PRETTY` | No | Set `true` for human-readable dev logs (used by `npm run dev`) |
+| `GMAIL_USER` | No | Sender for email applications (default `filpoyma@gmail.com`) |
+| `GMAIL_APP_PASSWORD` | No | [Google App Password](https://myaccount.google.com/apppasswords) for SMTP; required for email apply |
 
 **Never commit** `.env` or `data/session/` — they are in `.gitignore`. The Telegram session is equivalent to your account login.
 
@@ -107,6 +109,18 @@ Expected logs (scopes):
 
 When a new relevant vacancy arrives: parser → matcher → MongoDB → notification to **«Сохраненные вакансии»** (only for **new** + **above threshold** vacancies).
 
+If the post contains a Telegram `@contact` or email and `apply.enabled` is true, the worker picks Frontend vs Fullstack from the vacancy text. When the role is **unambiguous**, the application is sent automatically; when **ambiguous**, the notification asks you to reply **`/send`** on that message to confirm. Email apply requires `GMAIL_APP_PASSWORD` in `.env`.
+
+### Smoke test (Telegram + email delivery)
+
+On the server, after `.env` and Telegram session are set up:
+
+```bash
+pnpm apply:smoke
+```
+
+This sends a **marked smoke test** (not a real application) with CV + cover letter to **@Romantra** and **poymaza@gmail.com**. Options: `--telegram-only`, `--email-only`, `--profile=fullstack`.
+
 Stop with `Ctrl+C` (graceful shutdown: collector → Telegram → MongoDB).
 
 Production build:
@@ -156,6 +170,7 @@ src/
   messages/               # ProcessedMessage helper
   vacancy/                # parser, normalizer, matcher, dedup
   notifications/          # Telegram notifications
+  apply/                  # apply drafts, /send confirm, Telegram & email senders
   models/                 # Mongoose models
   database/connection.ts
   utils/                  # logger, project root

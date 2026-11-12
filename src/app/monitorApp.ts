@@ -9,6 +9,8 @@ import {
 } from "../telegram/client.ts";
 import { startCollector } from "../telegram/collector.ts";
 import type { Unsubscribe } from "teleproto/client/updates/composer";
+import { loadApplyAssets } from "../apply/loadApplyAssets.ts";
+import { startApplyConfirmListener } from "../apply/startConfirmListener.ts";
 import { createVacancyAnalyzer } from "../vacancy/aiAnalyzer.ts";
 import { handleRawMessage } from "../vacancy/handleRawMessage.ts";
 import { createLogger } from "../utils/logger.ts";
@@ -46,6 +48,17 @@ export async function startMonitorApplication(
     telegramClient,
     config.notifications.targetTitle,
   );
+  const notificationChatId = String(
+    await telegramClient.getPeerId(notificationTargetId, true),
+  );
+
+  let applyAssets: Awaited<ReturnType<typeof loadApplyAssets>> | undefined;
+  if (config.apply.enabled) {
+    applyAssets = await loadApplyAssets(config.apply);
+    createLogger("Apply").info("Apply assets loaded");
+  } else {
+    createLogger("Apply").info("Apply flow disabled in config");
+  }
 
   const sourceLabelById = new Map(
     config.telegram.sources
@@ -67,6 +80,11 @@ export async function startMonitorApplication(
   const messageDeps = {
     analyzer,
     filterRoles: config.filters.roles,
+    applyConfig: config.apply,
+    applyAssets,
+    gmail: env.gmail,
+    gmailEnabled: env.gmail.enabled,
+    notificationChatId,
     telegramClient,
     notificationTargetId,
     notificationTargetTitle: config.notifications.targetTitle,
@@ -76,6 +94,7 @@ export async function startMonitorApplication(
   };
 
   let stopCollector: Unsubscribe | undefined;
+  let stopApplyConfirm: Unsubscribe | undefined;
   let acceptingMessages = true;
 
   stopCollector = await startCollector(
@@ -93,6 +112,24 @@ export async function startMonitorApplication(
     },
   );
 
+  if (config.apply.enabled && applyAssets !== undefined) {
+    stopApplyConfirm = startApplyConfirmListener(
+      telegramClient,
+      notificationTargetId,
+      {
+        confirmCommand: config.apply.confirmCommand,
+        notificationChatId,
+        notificationTarget: notificationTargetId,
+        assets: applyAssets,
+        telegramClient,
+        gmail: env.gmail,
+      },
+      {
+        isActive: () => acceptingMessages && !shutdownController.isShuttingDown(),
+      },
+    );
+  }
+
   log.info("Collector is running");
 
   return {
@@ -106,6 +143,7 @@ export async function startMonitorApplication(
       log.info(`Received ${signal}, shutting down...`);
 
       stopCollector?.();
+      stopApplyConfirm?.();
       await disconnectTelegramClient(telegramClient);
       await disconnectDatabase();
 

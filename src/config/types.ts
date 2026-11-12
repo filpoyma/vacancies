@@ -30,6 +30,19 @@ export interface INotificationsConfig {
   targetTitle: string;
 }
 
+export type TApplyProfileId = "frontend" | "fullstack";
+
+export interface IApplyProfileConfig {
+  resumePath: string;
+}
+
+export interface IApplyConfig {
+  enabled: boolean;
+  confirmCommand: string;
+  profiles: Record<TApplyProfileId, IApplyProfileConfig>;
+  coverLetterPath: string;
+}
+
 export interface ITelegramConfig {
   sources: ISourceConfig[];
 }
@@ -43,5 +56,6 @@ export interface IAppConfig {
   telegram: ITelegramConfig;
   filters: IFiltersConfig;
   notifications: INotificationsConfig;
+  apply: IApplyConfig;
   ai?: IAiConfig;
 }

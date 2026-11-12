@@ -72,6 +72,25 @@ function formatAiBlock(config: IAppConfig): string {
 `;
 }
 
+function formatApplyBlock(config: IAppConfig): string {
+  const apply = config.apply;
+  return `
+  apply: {
+    enabled: ${String(apply.enabled)},
+    confirmCommand: ${quoteString(apply.confirmCommand)},
+    profiles: {
+      frontend: {
+        resumePath: ${quoteString(apply.profiles.frontend.resumePath)},
+      },
+      fullstack: {
+        resumePath: ${quoteString(apply.profiles.fullstack.resumePath)},
+      },
+    },
+    coverLetterPath: ${quoteString(apply.coverLetterPath)},
+  },
+`;
+}
+
 export function formatAppConfigFile(config: IAppConfig): string {
   const sourcesBlock = config.telegram.sources
     .map(sanitizeSourceConfig)
@@ -110,7 +129,7 @@ ${formatAiBlock(config)}
     target: ${quoteString(config.notifications.target)},
     targetTitle: ${quoteString(config.notifications.targetTitle)},
   },
-};
+${formatApplyBlock(config)};
 `;
 }
 

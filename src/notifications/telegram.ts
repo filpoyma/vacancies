@@ -131,6 +131,10 @@ export async function resolveNotificationTarget(
   return createdId;
 }
 
+export interface ISentVacancyNotification {
+  messageId: number;
+}
+
 export async function sendVacancyNotification(
   client: TelegramClient,
   target: EntityLike,
@@ -139,8 +143,9 @@ export async function sendVacancyNotification(
   sourceTitle: string,
   vacancyUrl?: string,
   configuredRoles: string[] = [],
-): Promise<void> {
-  const message = formatVacancyNotificationMessage(
+  messageAppend?: string,
+): Promise<ISentVacancyNotification> {
+  let message = formatVacancyNotificationMessage(
     parsed,
     match,
     sourceTitle,
@@ -148,9 +153,15 @@ export async function sendVacancyNotification(
     configuredRoles,
   );
 
-  await client.sendMessage(target, {
+  if (messageAppend !== undefined && messageAppend.trim() !== "") {
+    message = `${message}\n${messageAppend}`;
+  }
+
+  const sent = await client.sendMessage(target, {
     message,
     parseMode: "html",
     linkPreview: false,
   });
+
+  return { messageId: sent.id };
 }

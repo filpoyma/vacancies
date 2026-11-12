@@ -15,9 +15,16 @@ export interface IOpenRouterEnv {
   enabled: boolean;
 }
 
+export interface IGmailEnv {
+  user?: string;
+  appPassword?: string;
+  enabled: boolean;
+}
+
 export interface IEnv extends ITelegramEnv {
   mongodbUri: string;
   openRouter: IOpenRouterEnv;
+  gmail: IGmailEnv;
 }
 
 function missingVar(name: string): never {
@@ -69,6 +76,7 @@ export function loadEnv(): IEnv {
     ...loadTelegramEnv(),
     mongodbUri: requireNonEmpty("MONGODB_URI", process.env.MONGODB_URI),
     openRouter: loadOpenRouterEnv(),
+    gmail: loadGmailEnv(),
   };
 
   return cachedEnv;
@@ -87,5 +95,22 @@ export function loadOpenRouterEnv(): IOpenRouterEnv {
     apiKey,
     model,
     enabled: apiKey !== undefined,
+  };
+}
+
+const DEFAULT_GMAIL_USER = "filpoyma@gmail.com";
+
+export function loadGmailEnv(): IGmailEnv {
+  const rawUser = process.env.GMAIL_USER?.trim();
+  const user =
+    rawUser === undefined || rawUser === "" ? DEFAULT_GMAIL_USER : rawUser;
+  const rawPassword = process.env.GMAIL_APP_PASSWORD?.trim();
+  const appPassword =
+    rawPassword === undefined || rawPassword === "" ? undefined : rawPassword;
+
+  return {
+    user,
+    appPassword,
+    enabled: appPassword !== undefined,
   };
 }
